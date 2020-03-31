@@ -5,30 +5,25 @@ import Button from './components/Button';
 import Card from './components/Card';
 
 function App() {
-    // const [cardsPlaying, setCardsPlaying] = useState(false);
-    const [currentCard, setCurrentCard] = useState(null);
-    const [currentIndex, setCurrentIndex] = useState(null);
+    const defaultDuration = 3;
 
+    const [currentCard, setCurrentCard] = useState(null);
     const [cardTitle, setCardTitle] = useState('');
-    const [cardText, setCardText] = useState('');
-    const [cardDuration, setCardDuration] = useState(1000);
+    const [cardDuration, setCardDuration] = useState(defaultDuration);
     const [cards, setCards] = useState([
         {
             id: 0,
-            title: 'First Card',
-            text: 'Will play first...',
-            duration: 500
+            title: 'Downward Dog',
+            duration: 2000
         },
         {
             id: 1,
-            title: 'Second Card',
-            text: 'Will play second...',
-            duration: 1500
+            title: 'Upward Dog',
+            duration: 3000
         },
         {
             id: 2,
-            title: 'Third Card',
-            text: 'Will play third...',
+            title: 'Tabletop Pose',
             duration: 2000
         }
     ]);
@@ -39,83 +34,72 @@ function App() {
             {
                 id: cards.length,
                 title: cardTitle,
-                text: cardText,
-                duration: cardDuration
+                duration: cardDuration * 1000
             }
         ]);
 
-        setCardText('');
         setCardTitle('');
-        setCardDuration(1000);
+        setCardDuration(defaultDuration);
     }
 
-    function playCard(card, duration) {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                console.log('done: ', card);
-                resolve();
-            }, duration);
-        });
+    function playbackCards() {
+        setNextCard();
     }
 
-    function doThing(index = 0) {
+    function setNextCard(index = 0) {
         const card = cards[index];
 
         setCurrentCard(card);
 
         if (index >= cards.length) {
-            console.log('all finished!');
             setCurrentCard(null);
             return;
         }
 
-        playCard(card, card.duration).then(() => {
-            doThing(index + 1);
+        setCard(card.duration).then(() => {
+            setNextCard(index + 1);
         });
     }
 
-    function playbackCards() {
-        doThing();
+    function setCard(duration) {
+        return new Promise(resolve => {
+            setTimeout(() => resolve(), duration);
+        });
     }
 
     return (
         <div id="app">
-            <div style={{ marginBottom: '20px' }}>
+            <div id="card-form">
+                <div className="card-form__field-container">
+                    <label>Title</label>
+                    <Input type="text" value={cardTitle} onChange={e => setCardTitle(e.target.value)} />
+                </div>
+
+                <div className="card-form__field-container">
+                    <label>Duration (in seconds)</label>
+                    <Input type="number" value={cardDuration} onChange={e => setCardDuration(e.target.value)} />
+                </div>
+            </div>
+
+            <div className="buttons-container" style={{ marginTop: '20px' }}>
+                <Button onClick={addCard} primary>
+                    Add Card
+                </Button>
                 <Button onClick={playbackCards}>Playback Cards</Button>
             </div>
 
             <hr />
 
-            <div id="card-form">
-                <div>
-                    <label>Title</label>
-                    <Input type="text" value={cardTitle} onChange={e => setCardTitle(e.target.value)} />
-                </div>
-
-                <div>
-                    <label>Text</label>
-                    <Input type="text" value={cardText} onChange={e => setCardText(e.target.value)} />
-                </div>
-
-                <div>
-                    <label>Duration (ms)</label>
-                    <Input type="number" value={cardDuration} onChange={e => setCardDuration(e.target.value)} />
+            <div>
+                <h1 style={{ marginBottom: '20px' }}>Your Cards</h1>
+                <div className="your-cards-container">
+                    {currentCard === null && cards.map(card => <Card key={card.id} card={card} />)}
                 </div>
             </div>
-
-            <div style={{ marginTop: '20px' }}>
-                <Button onClick={addCard} primary>
-                    Add Card
-                </Button>
-            </div>
-
-            <hr />
-
-            {currentCard === null && cards.map(card => <Card key={card.id} card={card} />)}
 
             {currentCard && (
                 <div>
-                    <h1>Playing...</h1>
+                    <h3>Playing...</h3>
                     <Card key={currentCard.id} card={currentCard} />
                 </div>
             )}
